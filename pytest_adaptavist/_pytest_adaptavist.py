@@ -252,7 +252,7 @@ class PytestAdaptavist:
 
         test_result = self.adaptavist.get_test_result(self.test_run_key, test_case_key)
 
-        if not test_result or self.test_refresh_info[test_case_key + specs] != self.test_run_key:
+        if not test_result or self.test_refresh_info.get(test_case_key + specs) != self.test_run_key:
             # create new test result to prevent accumulation of data
             # when using an existing test run key multiple times
             self.adaptavist.create_test_result(
@@ -263,12 +263,12 @@ class PytestAdaptavist:
                 assignee=self.local_user,
             )
             test_result = self.adaptavist.get_test_result(self.test_run_key, test_case_key)
-            self.test_refresh_info[test_case_key + specs] = self.test_run_key
+            self.test_refresh_info.setdefault(test_case_key + specs, self.test_run_key)
 
         # touch parametrized/repeated items
         for key in self.test_refresh_info:
             if re.search(test_case_key + r"[ \[\b]", key):
-                self.test_refresh_info[key] = self.test_run_key
+                self.test_refresh_info.get(key, self.test_run_key)
 
         # get optional meta data (comments, attachments) of test case method
         comment: str = skip_status.kwargs.get("reason", "") if skip_status else test_result_data.get("comment", "")
